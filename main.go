@@ -47,7 +47,7 @@ func main() {
 	// Token generation endpoint
 	http.HandleFunc("/generate-token", GenerateTokenHandler)
 
-	port := "8080"
+	port := "10000"
 	fmt.Printf("Server started on port %s\n", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
