@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"websocket-server/handlers"
 	"websocket-server/utils"
 )
@@ -42,26 +41,13 @@ func GenerateTokenHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		fmt.Printf("PORT environment variable not set")
-	}
-
-	log.Printf("Listening on port %s", port)
-	err := http.ListenAndServe(":"+port, nil)
-	if err != nil {
-		log.Fatalf("Error starting server: %v", err)
-	}
-
-	port = "4000"
-	fmt.Printf("Server started on port %s\n", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
-
 	// WebSocket endpoint
 	http.HandleFunc("/ws", handlers.WebSocketHandler)
 
 	// Token generation endpoint
 	http.HandleFunc("/generate-token", GenerateTokenHandler)
 
+	port := "8080"
+	fmt.Printf("Server started on port %s\n", port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
