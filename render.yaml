@@ -1,0 +1,16 @@
+# Exported from Render on 2025-01-15T05:00:23Z
+services:
+- type: web
+  name: websocket-server
+  runtime: go
+  repo: https://github.com/adwise-planning/websocket-server
+  branch: init-001
+  plan: free
+  envVars:
+  - key: PORT
+    value: 4000
+    sync: false
+  region: oregon
+  buildCommand: go build -o main .
+  startCommand: ./main
+version: "1"
