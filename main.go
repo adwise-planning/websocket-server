@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"websocket-server/authentication"
+	"websocket-server/db_connection"
 	"websocket-server/handlers"
-	"websocket-server/utils"
 )
 
 // Response structure for token generation
@@ -25,7 +26,7 @@ func GenerateTokenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Generate a token for the user
-	token, err := utils.GenerateToken(userID)
+	token, err := authentication.GenerateToken(userID)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to generate token: %v", err), http.StatusInternalServerError)
 		return
@@ -41,6 +42,9 @@ func GenerateTokenHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
+	db_connection.InitializePostgresDB()
+
 	// WebSocket endpoint
 	http.HandleFunc("/ws", handlers.WebSocketHandler)
 

@@ -3,9 +3,9 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"websocket-server/authentication"
 	"websocket-server/connections"
 	"websocket-server/services"
-	"websocket-server/utils"
 
 	"github.com/gorilla/websocket"
 )
@@ -21,7 +21,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := utils.ValidateToken(token)
+	userID, err := authentication.ValidateToken(token)
 	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -34,8 +34,8 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	connections.AddConnection(userID, conn)
-	defer connections.RemoveConnection(userID)
+	connections.AddConnection(userID, token, conn)
+	defer connections.RemoveConnection(userID, token)
 
 	log.Printf("User %s connected\n", userID)
 

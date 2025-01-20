@@ -22,7 +22,7 @@ func HandleMessage(senderID string, message []byte) {
 		return
 	}
 
-	conn, ok := connections.GetConnection(msg.RecipientID)
+	conn, ok := connections.GetConnection(msg.RecipientID, "")
 	if !ok {
 		log.Printf("Recipient %s not connected\n", msg.RecipientID)
 		return

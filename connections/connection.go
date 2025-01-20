@@ -10,17 +10,17 @@ import (
 var connectionMap = sync.Map{}
 
 // AddConnection adds a WebSocket connection for a user
-func AddConnection(userID string, conn *websocket.Conn) {
+func AddConnection(userID string, token string, conn *websocket.Conn) {
 	connectionMap.Store(userID, conn)
 }
 
 // RemoveConnection removes a WebSocket connection for a user
-func RemoveConnection(userID string) {
+func RemoveConnection(userID string, token string) {
 	connectionMap.Delete(userID)
 }
 
 // GetConnection retrieves the WebSocket connection for a user
-func GetConnection(userID string) (*websocket.Conn, bool) {
+func GetConnection(userID string, token string) (*websocket.Conn, bool) {
 	conn, ok := connectionMap.Load(userID)
 	if !ok {
 		return nil, false
