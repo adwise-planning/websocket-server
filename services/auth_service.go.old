@@ -1,0 +1,28 @@
+package services
+
+import (
+	"errors"
+	"websocket-server/utils"
+)
+
+// AuthService provides authentication-related functionalities
+type AuthService struct{}
+
+// NewAuthService creates a new instance of AuthService
+func NewAuthService() *AuthService {
+	return &AuthService{}
+}
+
+// GenerateToken generates a JWT for the given email
+func (s *AuthService) GenerateToken(email string) (string, error) {
+	return utils.GenerateJWT(email)
+}
+
+// ValidateToken validates a JWT and returns the associated claims
+func (s *AuthService) ValidateToken(token string) (string, error) {
+	claims, err := utils.ValidateJWT(token)
+	if err != nil {
+		return "", errors.New("invalid token")
+	}
+	return claims.Email, nil
+}

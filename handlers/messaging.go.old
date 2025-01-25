@@ -1,0 +1,11 @@
+package handlers
+
+import (
+	"net/http"
+	"websocket-server/services"
+)
+
+// MessagingHandler establishes a WebSocket connection
+func MessagingHandler(w http.ResponseWriter, r *http.Request) {
+	services.HandleWebSocket(w, r)
+}
