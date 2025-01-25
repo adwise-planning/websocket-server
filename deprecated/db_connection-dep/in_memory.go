@@ -1,4 +1,4 @@
-package utils
+package db_connection
 
 import (
 	"context"
