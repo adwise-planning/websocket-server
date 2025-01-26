@@ -2,10 +2,15 @@ package utils
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"log"
 	"time"
+	"websocket-server/database"
+	"websocket-server/logging"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -33,6 +38,7 @@ func GenerateToken(username, device_id, email string) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	logging.LogInfo("Token generated successfully for user: " + username)
 	return token.SignedString(jwtSecret)
 }
 
@@ -47,21 +53,25 @@ func ValidateToken(tokenString string) (string, error) {
 		return jwtSecret, nil
 	})
 	if err != nil {
-		return "", errors.New("invalid token")
+		logging.LogError("Failed to validate token", err)
+		// return "", err
 	}
 
 	// Extract claims
 	claims, ok := token.Claims.(*Claims)
 	if !ok || !token.Valid {
-		return "", errors.New("invalid token claims")
+		logging.LogError("Failed to validate token claims", errors.New("invalid token claims"))
+		// return "", errors.New("invalid token claims")
 	}
 
 	// Check token expiration
 	if claims.ExpiresAt.Time.Before(time.Now()) {
-		return "", errors.New("token has expired")
+		logging.LogError("Token Expired", errors.New("token has expired"))
+		// return "", errors.New("token has expired")
 	}
 
 	// Return the user ID from the claims
+	logging.LogInfo("Token validated successfully for user: " + claims.UserName)
 	return claims.UserName, nil
 }
 
@@ -84,4 +94,28 @@ func GenerateRandomString(length int) (string, error) {
 
 	// Encode to a base64 string to ensure safe and readable output
 	return base64.RawURLEncoding.EncodeToString(randomBytes)[:length], nil
+}
+
+func IsTrustedOrigin(origin string) bool {
+	// Implement your logic to check if the origin is trusted
+	trustedOrigins := []string{"http://example.com", "http://trusted.com"}
+	for _, trustedOrigin := range trustedOrigins {
+		if origin == trustedOrigin {
+			return true
+		}
+	}
+	return true
+}
+
+func HashToken(token string) string {
+	hash := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(hash[:])
+}
+
+func logToDB(level, message string) {
+	query := `INSERT INTO logs (level, message, timestamp) VALUES ($1, $2, $3)`
+	_, err := database.PostgresDB.Exec(query, level, message, time.Now())
+	if err != nil {
+		log.Printf("Failed to log to database: %v", err)
+	}
 }

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
+	"websocket-server/logging"
 	"websocket-server/models"
 	"websocket-server/services"
 )
@@ -18,33 +18,27 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var requestData struct {
-		User   models.User   `json:"user"`
-		Device models.Device `json:"device"`
-	}
-
-	fmt.Printf("Headers: %v\n", r.Header)
-	fmt.Printf("Params: %v\n", r.URL.Query())
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		logging.LogError("Failed to read request body", err)
 		http.Error(w, "Failed to read request body", http.StatusInternalServerError)
 		return
 	}
-	fmt.Printf("Body: %s\n", body)
 	r.Body = io.NopCloser(bytes.NewBuffer(body)) // Reset body for further use
 
+	var requestData models.SignUpRequestData
 	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
+		logging.LogError("Invalid request payload", err)
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
+
 	user := requestData.User
 	device := requestData.Device
 
 	s := services.NewUserService()
-
 	// Check if user already exists
 	exists := s.UserExists(user.Email)
-
 	if exists {
 		http.Error(w, "User already exists", http.StatusConflict)
 		return
@@ -52,12 +46,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Save the user (password should be hashed in production)
 	token, refresh_token, err := s.RegisterUser(&user, &device)
-	log.Printf("%s", fmt.Sprintf("Failed to register user: %v", err))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to register user: %v", err), http.StatusInternalServerError)
+		logging.LogError("Failed to register user", err)
+		http.Error(w, "Failed to register user", http.StatusInternalServerError)
 		return
 	}
 
+	logging.LogInfo(fmt.Sprintf("User registered successfully: %s", user.Username))
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{
 		"message":       "User registered successfully",
@@ -73,15 +68,18 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var requestData struct {
-		Credentials models.Credentials `json:"credentials"`
-		Device      models.Device      `json:"device"`
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		logging.LogError("Failed to read request body", err)
+		http.Error(w, "Failed to read request body", http.StatusInternalServerError)
+		return
 	}
+	r.Body = io.NopCloser(bytes.NewBuffer(body)) // Reset body for further use
 
-	fmt.Printf("Body: %v\n", r.Body)
-	fmt.Printf("JSON Decoder: %v\n", json.NewDecoder(r.Body))
+	var requestData models.LoginRequestData
 
 	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
+		logging.LogError("Invalid request payload", err)
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
@@ -94,9 +92,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Validate user credentials
 	token, refresh_token, err := s.AuthenticateUser(&credentials, &device)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Invalid email or password %s: %v", credentials.Username, err), http.StatusUnauthorized)
+		logging.LogError(fmt.Sprintf("Invalid email or password for user %s", credentials.Username), err)
+		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]string{"access_token": token, "refresh_token": refresh_token})
+	logging.LogInfo(fmt.Sprintf("User logged in successfully: %s", credentials.Username))
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{
+		"access_token":  token,
+		"refresh_token": refresh_token,
+	})
 }
