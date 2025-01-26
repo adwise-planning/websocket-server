@@ -21,10 +21,10 @@ func InitializePostgresDB() {
 	password := os.Getenv("DB_PASSWORD")
 	dbname := os.Getenv("DB_NAME")
 
-	host = "localhost"
+	host = "dpg-cu796edds78s73aq6iu0-a"
 	port = "5432"
-	user = "postgres"
-	password = "12345"
+	user = "admin"
+	password = "rsg80kYOY6qbbbBfSwWwdcjxF6gYevFP"
 	dbname = "adwise"
 	schema := "data"
 
