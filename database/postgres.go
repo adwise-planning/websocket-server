@@ -23,7 +23,7 @@ func InitializePostgresDB() {
 	schema := os.Getenv("DB_SCHEMA")
 
 	psqlInfo := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable search_path=%s",
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=require search_path=%s",
 		host, port, user, password, dbname, schema,
 	)
 
