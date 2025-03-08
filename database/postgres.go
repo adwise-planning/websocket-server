@@ -28,7 +28,7 @@ func InitializePostgresDB() {
 
 	psqlInfo := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=require search_path=%s",
-		"ep-steep-sound-a5jr9vda-pooler.us-east-2.aws.neon.tech", "5432", "admin", "npg_Lxe83skfqKTg", "data", "public",
+		"ep-steep-sound-a5jr9vda-pooler.us-east-2.aws.neon.tech", "5432", "admin", "npg_Lxe83skfqKTg", "adwise", "data",
 	)
 
 	log.Printf("Connecting to the database using the following parameters: %s", psqlInfo)
