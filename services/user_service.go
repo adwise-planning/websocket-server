@@ -39,7 +39,7 @@ func (s *UserService) RegisterUser(user *models.User, device *models.Device) (st
 	}
 
 	// Retrieve the user ID and save user_auth
-	var userID int
+	var userID uuid.UUID
 	err = database.PostgresDB.QueryRow("SELECT id FROM data.users WHERE email=$1", user.Email).Scan(&userID)
 	if err != nil {
 		return "", "", fmt.Errorf("could not retrieve user ID: %v", err)
