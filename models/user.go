@@ -20,7 +20,7 @@ type User struct {
 	State            string `json:"state"`
 	Country          string `json:"country"`
 	ZipCode          string `json:"zip_code"`
-	PhoneCountryCode string `json:"phone_country_code"`
+	PhoneCountryCode string `json:"country_code"`
 	PhoneNumber      string `json:"phone_number"`
 }
 

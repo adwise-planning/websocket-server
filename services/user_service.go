@@ -31,16 +31,15 @@ func (s *UserService) RegisterUser(user *models.User, device *models.Device) (st
 
 	// Save user to the database
 	_, err = database.PostgresDB.Exec(
-		"INSERT INTO data.users (username, first_name, last_name, email, date_of_birth, address_line1, address_line2, city, state, country, zip_code, phone_country_code, phone_number) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
-		user.Username, user.FirstName, user.LastName, user.Email, user.DateOfBirth, user.AddressLine1, user.AddressLine2, user.City, user.State, user.Country, user.ZipCode, user.PhoneCountryCode, user.PhoneNumber,
-	)
+		"INSERT INTO data.users (country_code, phone_number, first_name, last_name, email) VALUES ($1, $2, $3, $4, $5)",
+		user.PhoneCountryCode, user.PhoneNumber, user.FirstName, user.LastName, user.Email)
 	if err != nil {
 		return "", "", fmt.Errorf("could not save user: %v", err)
 	}
 
 	// Retrieve the user ID and save user_auth
 	var userID int
-	err = database.PostgresDB.QueryRow("SELECT user_id FROM data.users WHERE email=$1", user.Email).Scan(&userID)
+	err = database.PostgresDB.QueryRow("SELECT id FROM data.users WHERE email=$1", user.Email).Scan(&userID)
 	if err != nil {
 		return "", "", fmt.Errorf("could not retrieve user ID: %v", err)
 	}
@@ -74,7 +73,9 @@ func (s *UserService) RegisterUser(user *models.User, device *models.Device) (st
 func (s *UserService) AuthenticateUser(credentials *models.Credentials, device *models.Device) (string, string, error) {
 	var user_id int
 	var password_hash, email string
-	query := "SELECT a.auth_id, password_hash, u.email FROM data.user_auth a join data.users u on a.user_id = u.user_id WHERE u.username=$1"
+	// query := "SELECT a.auth_id, password_hash, u.email FROM data.user_auth a join data.users u on a.user_id = u.user_id WHERE u.username=$1"
+	query := "SELECT id, password, email FROM data.users WHERE email=$1"
+
 	err := database.PostgresDB.QueryRow(query, credentials.Username).Scan(&user_id, &password_hash, &email)
 	if err == sql.ErrNoRows {
 		return "", "", errors.New("user not found")
