@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"time"
 	"websocket-server/database"
 	"websocket-server/models"
 	"websocket-server/utils"
@@ -25,7 +24,8 @@ func NewUserService() *UserService {
 // RegisterUser saves a new user to the database.
 func (s *UserService) RegisterUser(user *models.User, device *models.Device) (string, string, error) {
 	// Convert password to hash
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	// hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	_, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", "", err
 	}
@@ -60,13 +60,13 @@ func (s *UserService) RegisterUser(user *models.User, device *models.Device) (st
 	}
 
 	// Save user_auth to the database
-	_, err = database.PostgresDB.Exec(
-		"INSERT INTO data.user_auth (user_id, password_hash, auth_token, refresh_token) VALUES ($1, $2, $3, $4)",
-		userID, string(hashedPassword), accessToken, refreshToken,
-	)
-	if err != nil {
-		return "", "", fmt.Errorf("could not save user authentication: %v", err)
-	}
+	// _, err = database.PostgresDB.Exec(
+	// 	"INSERT INTO data.user_auth (user_id, password_hash, auth_token, refresh_token) VALUES ($1, $2, $3, $4)",
+	// 	userID, string(hashedPassword), accessToken, refreshToken,
+	// )
+	// if err != nil {
+	// 	return "", "", fmt.Errorf("could not save user authentication: %v", err)
+	// }
 	return accessToken, refreshToken, nil
 }
 
@@ -104,20 +104,20 @@ func (s *UserService) AuthenticateUser(credentials *models.Credentials, device *
 	}
 
 	// Store refresh token in DB
-	err = s.StoreRefreshToken(user_id, refreshToken)
-	if err != nil {
-		return "", "", err
-	}
+	// err = s.StoreRefreshToken(user_id, refreshToken)
+	// if err != nil {
+	// 	return "", "", err
+	// }
 
 	return accessToken, refreshToken, nil
 }
 
 // StoreRefreshToken saves a refresh token in the database
-func (s *UserService) StoreRefreshToken(userID uuid.UUID, refreshToken string) error {
-	query := `INSERT INTO data.refresh_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)`
-	_, err := database.PostgresDB.Exec(query, userID, refreshToken, time.Now().Add(30*24*time.Hour)) // 30 days
-	return err
-}
+// func (s *UserService) StoreRefreshToken(userID uuid.UUID, refreshToken string) error {
+// 	query := `INSERT INTO data.refresh_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)`
+// 	_, err := database.PostgresDB.Exec(query, userID, refreshToken, time.Now().Add(30*24*time.Hour)) // 30 days
+// 	return err
+// }
 
 // SaveDevice saves a new device to the database.
 func (s *UserService) SaveDevice(user_id uuid.UUID, device *models.Device) (string, error) {
