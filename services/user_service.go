@@ -10,6 +10,7 @@ import (
 	"websocket-server/models"
 	"websocket-server/utils"
 
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -71,7 +72,7 @@ func (s *UserService) RegisterUser(user *models.User, device *models.Device) (st
 
 // GetToken retrieves the token for a user from the database - Login User
 func (s *UserService) AuthenticateUser(credentials *models.Credentials, device *models.Device) (string, string, error) {
-	var user_id int
+	var user_id uuid.UUID
 	var password_hash, email string
 	// query := "SELECT a.auth_id, password_hash, u.email FROM data.user_auth a join data.users u on a.user_id = u.user_id WHERE u.username=$1"
 	query := "SELECT id, password, email FROM data.users WHERE email=$1"
@@ -112,14 +113,14 @@ func (s *UserService) AuthenticateUser(credentials *models.Credentials, device *
 }
 
 // StoreRefreshToken saves a refresh token in the database
-func (s *UserService) StoreRefreshToken(userID int, refreshToken string) error {
+func (s *UserService) StoreRefreshToken(userID uuid.UUID, refreshToken string) error {
 	query := `INSERT INTO data.refresh_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)`
 	_, err := database.PostgresDB.Exec(query, userID, refreshToken, time.Now().Add(30*24*time.Hour)) // 30 days
 	return err
 }
 
 // SaveDevice saves a new device to the database.
-func (s *UserService) SaveDevice(user_id int, device *models.Device) (string, error) {
+func (s *UserService) SaveDevice(user_id uuid.UUID, device *models.Device) (string, error) {
 	_, err := database.PostgresDB.Exec(
 		`INSERT INTO data.devices (
 			user_id, name, type, manufacturer, model, serial_number, firmware, hardware_version, 
