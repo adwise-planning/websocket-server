@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"websocket-server/database"
+	"websocket-server/middleware"
 	"websocket-server/routes"
 )
 
@@ -26,9 +27,11 @@ func main() {
 	// Token generation endpoint
 	// http.HandleFunc("/generate-token", handlers.GenerateTokenHandler)
 
+	muxWithCORS := middleware.CORSHandler(mux)
+
 	port := "10000"
 	fmt.Printf("Server started on port %s\n", port)
 	// log.Fatal(http.ListenAndServe(":"+port, nil))
-	log.Fatal(http.ListenAndServe(":"+port, mux))
+	log.Fatal(http.ListenAndServe(":"+port, muxWithCORS))
 
 }
